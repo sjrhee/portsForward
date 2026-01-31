@@ -1,0 +1,50 @@
+{
+    "gateway": {
+        "host": "192.168.0.101",
+        "port": 10022,
+        "user": "root",
+        "auth_type": "key",
+        "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+        "password": ""
+    },
+    "target": {
+        "host": "192.168.0.211",
+        "port": 22,
+        "user": "root",
+        "auth_type": "key",
+        "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+        "password": ""
+    },
+    "gateway_history": {
+        "192.168.0.101": {
+            "host": "192.168.0.101",
+            "port": 10022,
+            "user": "root",
+            "auth_type": "key",
+            "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+            "password": ""
+        }
+    },
+    "target_history": {
+        "192.168.0.211": {
+            "host": "192.168.0.211",
+            "port": 22,
+            "user": "root",
+            "auth_type": "key",
+            "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+            "password": ""
+        },
+        "192.168.0.234": {
+            "host": "192.168.0.234",
+            "port": 22,
+            "user": "ubuntu",
+            "auth_type": "password",
+            "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+            "password": "adm123"
+        }
+    },
+    "192.168.0.211": {
+        "last_remote_port": 3000,
+        "last_local_port": 13000
+    }
+}
