@@ -1,51 +1,51 @@
-# Ports Forwarding Tool
+# 포트 포워딩 도구
 
-A secure, daemon-based tool for managing double-hop SSH tunneling (Local -> Gateway -> Target) with an easy-to-use GUI.
+로컬 -> 게이트웨이 -> 타겟의 이중 SSH 터널링을 관리하는 안전한 데몬 기반 도구로, 사용하기 쉬운 GUI를 제공합니다.
 
-## Overview
-This tool simplifies the process of connecting to a remote target server that is only accessible via a Gateway (Jump Server). It handles SSH connections, daemon deployment, and port forwarding configuration automatically.
+## 개요
+이 도구는 게이트웨이(점프 서버)를 통해서만 접근 가능한 원격 타겟 서버에 연결하는 과���을 간소화합니다. SSH 연결, 데몬 배포 및 포트 포워딩 구성을 처리합니다.
 
-## Key Features
-- **Gateway (Jump Server) Support**: Seamless connection through intermediate SSH servers.
-- **Double Tunneling**: Securely access target servers hidden behind a private network.
-- **Auto-Deployment**: Automatically uploads and runs a lightweight Golang daemon (`port-daemon`) on the remote server.
-- **Port Forwarding**: Easy UI to map local ports to remote target ports.
-- **Session Management**: Remembers host configurations and last used ports for quick reconnection.
-- **Robust Connection**: Includes Heartbeat mechanism and auto-cleanup to prevent zombie processes.
+## 주요 기능
+- **게이트웨이(점프 서버) 지원**: 중간 SSH 서버를 통한 원활한 연결
+- **이중 터널링**: 사설 네트워크 뒤에 숨겨진 타겟 서버에 안전하게 접근
+- **자동 배포**: 경량 Golang 데몬(`port-daemon`)을 원격 서버에 자동으로 업로드하고 실행
+- **포트 포워딩**: 로컬 포트를 원격 타겟 포트에 매핑하는 간편한 UI
+- **세션 관리**: 빠른 재연결을 위해 호스트 구성 및 마지막으로 사용한 포트를 기억
+- **강력한 연결**: 좀비 프로세스를 방지하기 위한 하트비트 메커니즘 및 자동 정리 기능 포함
 
-## Architecture
-- **Client**: Python (`Tkinter`) GUI application running on Windows.
-- **Daemon**: Golang executable running on the Gateway/Target Linux servers.
+## 아키텍처
+- **클라이언트**: Windows에서 실행되는 Python(`Tkinter`) GUI 애플리케이션
+- **데몬**: 게이트웨이/타겟 Linux 서버에서 실행되는 Golang 실행 파일
 
-## Prerequisites
-- **Client**: Windows OS, Python 3.x
-- **Remote**: Linux Server with SSH access
+## 사전 요구사항
+- **클라이언트**: Windows OS, Python 3.x
+- **원격**: SSH 접근이 가능한 Linux 서버
 
-## Installation & Usage
+## 설치 및 사용법
 
-1.  **Clone the repository**
+1.  **저장소 클론**
     ```bash
     git clone https://github.com/sjrhee/portsForward.git
     cd portsForward
     ```
 
-2.  **Run the Application**
+2.  **애플리케이션 실행**
     ```bash
     python src/ui.py
     ```
 
-3.  **Step 1: Connect Gateway**
-    - Enter the Gateway IP, Port, User, and select your Private Key.
-    - Click **Connect Gateway**. The daemon will be deployed automatically.
+3.  **1단계: 게이트웨이 연결**
+    - 게이트웨이 IP, 포트, 사용자를 입력하고 개인 키를 선택합니다.
+    - **Connect Gateway**를 클릭합니다. 데몬이 자동으로 배포됩니다.
 
-4.  **Step 2: Connect Target**
-    - Enter the Target IP, Port, User, and Key/Password.
-    - Click **Connect Target**.
+4.  **2단계: 타겟 연결**
+    - 타겟 IP, 포트, 사용자 및 키/비밀번호를 입력합니다.
+    - **Connect Target**을 클릭합니다.
 
-5.  **Step 3: Port Forwarding**
-    - Enter the **Remote Port** (on Target) and **Local Port** (on your PC).
-    - Click **Add Forward**.
-    - You can now access `localhost:<Local Port>` to reach the Target's service.
+5.  **3단계: 포트 포워딩**
+    - **Remote Port**(타겟의 포트)와 **Local Port**(PC의 포트)를 입력합니다.
+    - **Add Forward**를 클릭합니다.
+    - 이제 `localhost:<Local Port>`에 접속하여 타겟의 서비스에 접근할 수 있습니다.
 
-## License
+## 라이선스
 MIT License
