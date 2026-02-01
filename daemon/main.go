@@ -371,10 +371,13 @@ func handleConnectTarget(msg Message) {
 	}
 
 	config := &ssh.ClientConfig{
-		User:            msg.User,
-		Auth:            authMethods,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         5 * time.Second,
+		User: msg.User,
+		Auth: authMethods,
+		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			log.Printf("[SSH] Automatically accepting host key for %s (%s)", hostname, remote)
+			return nil
+		},
+		Timeout: 10 * time.Second,
 	}
 
 	addr := fmt.Sprintf("%s:%d", msg.Host, msg.Port)
