@@ -46,6 +46,3 @@
     - **Remote Port**(타겟의 포트)와 **Local Port**(PC의 포트)를 입력합니다.
     - **Add Forward**를 클릭합니다.
     - 이제 `localhost:<Local Port>`에 접속하여 타겟의 서비스에 접근할 수 있습니다.
-
-## 라이선스
-MIT License
