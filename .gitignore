@@ -1,0 +1,4 @@
+*.exe
+*.log
+port-daemon
+__pycache__/

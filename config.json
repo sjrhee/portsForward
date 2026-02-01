@@ -8,12 +8,12 @@
         "password": ""
     },
     "target": {
-        "host": "192.168.0.211",
+        "host": "192.168.0.234",
         "port": 22,
-        "user": "root",
-        "auth_type": "key",
+        "user": "ubuntu",
+        "auth_type": "password",
         "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
-        "password": ""
+        "password": "adm123"
     },
     "gateway_history": {
         "192.168.0.101": {
@@ -44,7 +44,11 @@
         }
     },
     "192.168.0.211": {
-        "last_remote_port": 3000,
-        "last_local_port": 13000
+        "last_remote_port": 50,
+        "last_local_port": 10053
+    },
+    "192.168.0.234": {
+        "last_remote_port": 8088,
+        "last_local_port": 18088
     }
 }

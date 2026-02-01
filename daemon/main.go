@@ -136,8 +136,17 @@ func controlLoop(conn net.Conn) {
 		json.Unmarshal(payload, &msg)
 		processControlMessage(msg)
 	}
-	log.Println("Control connection closed or timed out. Exiting Daemon.")
+	log.Println("[EXIT] Control connection closed or timed out. Exiting Daemon.")
+	shutdownTarget()
 	os.Exit(0)
+}
+
+func shutdownTarget() {
+	if targetConn != nil {
+		log.Println("Sending SHUTDOWN signal to Target Daemon before exiting...")
+		sendJSON(targetConn, Message{Type: "SHUTDOWN"})
+		time.Sleep(200 * time.Millisecond) // Give time for message to be sent
+	}
 }
 
 func processControlMessage(msg Message) {
@@ -157,7 +166,7 @@ func processControlMessage(msg Message) {
 		go handleConnectTarget(msg)
 
 	case "HEARTBEAT":
-		log.Println("Received HEARTBEAT")
+		log.Println("[HEARTBEAT] Received")
 		if targetConn != nil {
 			sendJSON(targetConn, msg)
 		}
@@ -166,6 +175,12 @@ func processControlMessage(msg Message) {
 
 	case "DISCONNECT_TARGET":
 		log.Println("Received DISCONNECT_TARGET request.")
+		if targetConn != nil {
+			log.Println("Sending SHUTDOWN signal to Target Daemon...")
+			sendJSON(targetConn, Message{Type: "SHUTDOWN"})
+			time.Sleep(200 * time.Millisecond)
+		}
+
 		if targetSSHClient != nil {
 			targetSSHClient.Close()
 			targetSSHClient = nil
@@ -174,7 +189,8 @@ func processControlMessage(msg Message) {
 		}
 
 	case "SHUTDOWN":
-		log.Println("Received SHUTDOWN signal. Exiting.")
+		log.Println("[SHUTDOWN] Received signal. Exiting.")
+		shutdownTarget()
 		os.Exit(0)
 
 	default:

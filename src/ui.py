@@ -119,14 +119,21 @@ class MainWindow:
         target_defaults = self.config.get("target", {
             "host": "192.168.0.101", "port": "10022", "user": "root", "key_file": r"C:\Users\sjrhee\.ssh\id_rsa"
         })
-        self.target_entries = self._create_ssh_form(target_frame, start_row=0, defaults=target_defaults, section_key="target")
+        
+        # Checkbox for Jump Server Only Mode
+        self.use_gateway_as_target = tk.BooleanVar(value=False)
+        self.chk_use_gw = ttk.Checkbutton(target_frame, text="Use Gateway as Target (Disable Remote Connection)", 
+                                          variable=self.use_gateway_as_target, command=self._toggle_target_mode)
+        self.chk_use_gw.grid(row=0, column=0, columnspan=4, sticky="w", padx=5, pady=5)
+        
+        self.target_entries = self._create_ssh_form(target_frame, start_row=1, defaults=target_defaults, section_key="target")
 
         # Target Status & Connect Button (Initially Disabled)
         self.target_status_label = ttk.Label(target_frame, text="Status: Waiting for Gateway...", foreground="gray")
-        self.target_status_label.grid(row=4, column=0, columnspan=2, sticky="w", pady=5)
+        self.target_status_label.grid(row=5, column=0, columnspan=2, sticky="w", pady=5)
 
         self.target_connect_btn = ttk.Button(target_frame, text="Connect Target (via Gateway)", command=self._connect_target, state="disabled")
-        self.target_connect_btn.grid(row=4, column=2, columnspan=2, pady=5, sticky="e")
+        self.target_connect_btn.grid(row=5, column=2, columnspan=2, pady=5, sticky="e")
 
         target_frame.columnconfigure(1, weight=1)
 
@@ -303,13 +310,19 @@ class MainWindow:
 
     def _get_ssh_config(self, entries):
         return {
-            "host": entries["host"].get(),
-            "port": int(entries["port"].get()),
-            "user": entries["user"].get(),
+            "host": entries["host"].get().strip(),
+            "port": self._safe_int(entries["port"].get(), 22),
+            "user": entries["user"].get().strip(),
             "auth_type": entries["auth_type"].get(),
-            "key_file": entries["key"].get(),
+            "key_file": entries["key"].get().strip(),
             "password": entries["password"].get()
         }
+
+    def _safe_int(self, value, default):
+        try:
+            return int(value)
+        except:
+            return default
 
     def _connect_gateway(self):
         self._save_config() # Auto-save
@@ -422,42 +435,55 @@ class MainWindow:
         self._set_inputs_state(self.target_entries, "normal")
 
     def _connect_target(self):
-        self._save_config() # Auto-save
-        target_conf = self._get_ssh_config(self.target_entries)
-        
-        # Load saved extras (Process ID 7)
-        if target_conf['host'] in self.saved_config:
-            saved = self.saved_config[target_conf['host']]
-            target_conf['last_remote_port'] = saved.get('last_remote_port')
-            target_conf['last_local_port'] = saved.get('last_local_port')
-
-        self.current_target_conf = target_conf
-        
-        # Prepare Payload based on Auth Type
-        payload = {
-            "type": "CONNECT_TARGET",
-            "host": target_conf['host'],
-            "port": target_conf['port'],
-            "user": target_conf['user'],
-            "auth_type": target_conf.get('auth_type', 'key')
-        }
-
-        if payload["auth_type"] == "key":
-            try:
-                with open(target_conf['key_file'], 'r') as f:
-                    key_content = f.read()
-                payload["key"] = key_content
-            except Exception as e:
-                messagebox.showerror("Key Error", f"Failed to read key file: {e}")
+        try:
+            self._save_config() # Auto-save
+            target_conf = self._get_ssh_config(self.target_entries)
+            
+            # Jump Server Only Mode
+            if self.use_gateway_as_target.get() or not target_conf['host']:
+                logging.info("Jump Server Only Mode Selected.")
+                self.current_target_conf = target_conf
+                self.root.after(0, lambda: self._update_target_status("Connected (Jump Host)", "green"))
+                self.root.after(0, self._enable_forwarding_step)
                 return
-        else:
-             payload["password"] = target_conf.get("password")
-
-        self.target_status_label.configure(text="Status: Connecting...", foreground="orange")
-        self.target_connect_btn.configure(state="disabled")
-        self._set_inputs_state(self.target_entries, "disabled")
-        
-        threading.Thread(target=self._thread_connect_target, args=(payload,), daemon=True).start()
+            
+            # Load saved extras (Process ID 7)
+            if target_conf['host'] in self.saved_config:
+                saved = self.saved_config[target_conf['host']]
+                target_conf['last_remote_port'] = saved.get('last_remote_port')
+                target_conf['last_local_port'] = saved.get('last_local_port')
+    
+            self.current_target_conf = target_conf
+            
+            # Prepare Payload based on Auth Type
+            payload = {
+                "type": "CONNECT_TARGET",
+                "host": target_conf['host'],
+                "port": target_conf['port'],
+                "user": target_conf['user'],
+                "auth_type": target_conf.get('auth_type', 'key')
+            }
+    
+            if payload["auth_type"] == "key":
+                try:
+                    with open(target_conf['key_file'], 'r') as f:
+                        key_content = f.read()
+                    payload["key"] = key_content
+                except Exception as e:
+                    messagebox.showerror("Key Error", f"Failed to read key file: {e}")
+                    return
+            else:
+                 payload["password"] = target_conf.get("password")
+    
+            self.target_status_label.configure(text="Status: Connecting...", foreground="orange")
+            self.target_connect_btn.configure(state="disabled")
+            self._set_inputs_state(self.target_entries, "disabled")
+            
+            threading.Thread(target=self._thread_connect_target, args=(payload,), daemon=True).start()
+            
+        except Exception as e:
+             logging.error(f"Connect Target Error: {e}")
+             messagebox.showerror("Connection Error", f"An error occurred: {e}")
 
     def _disconnect_target_action(self):
         # Notify Gateway to disconnect target
@@ -491,12 +517,35 @@ class MainWindow:
         self.target_status_label.configure(text=f"Status: {text}", foreground=color)
         self.target_connect_btn.configure(state="normal")
         
+        # Hide button if in Jump Server Only Mode
+        if self.use_gateway_as_target.get():
+             self.target_connect_btn.grid_remove()
+        else:
+             self.target_connect_btn.grid()
+        
         if color == "green":
              self.target_connect_btn.configure(text="Disconnect Target", command=self._disconnect_target_action)
              self._set_inputs_state(self.target_entries, "disabled")
         else:
              self.target_connect_btn.configure(text="Connect Target (via Gateway)", command=self._connect_target)
              self._set_inputs_state(self.target_entries, "normal")
+
+    def _toggle_target_mode(self):
+        is_jump_mode = self.use_gateway_as_target.get()
+        state = "disabled" if is_jump_mode else "normal"
+        self._set_inputs_state(self.target_entries, state)
+        
+        if is_jump_mode:
+             # Auto-Connect
+             self.target_status_label.configure(text="Status: Jump Server Mode Selected", foreground="blue")
+             self.target_connect_btn.grid_remove() # Hide immediately
+             if self.ssh_manager and self.ssh_manager.connected:
+                 self._connect_target() 
+        else:
+             # Auto-Disconnect (Restore Normal Mode)
+             self._disconnect_target_action()
+             self.target_status_label.configure(text="Status: Ready to Connect", foreground="black")
+             self.target_connect_btn.grid() # Show button
 
     def _enable_forwarding_step(self):
         self.add_btn.configure(state="normal")
