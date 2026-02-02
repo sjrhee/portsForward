@@ -4,7 +4,7 @@
         "port": 10022,
         "user": "root",
         "auth_type": "key",
-        "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+        "key_file": "/mnt/c/Users/sjrhee/.ssh/id_rsa",
         "password": ""
     },
     "target": {
@@ -21,7 +21,7 @@
             "port": 10022,
             "user": "root",
             "auth_type": "key",
-            "key_file": "C:\\Users\\sjrhee\\.ssh\\id_rsa",
+            "key_file": "/mnt/c/Users/sjrhee/.ssh/id_rsa",
             "password": ""
         }
     },

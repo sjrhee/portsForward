@@ -31,7 +31,7 @@
 
 2.  **애플리케이션 실행**
     ```bash
-    python src/ui.py
+    python src/main.py
     ```
 
 3.  **1단계: 게이트웨이 연결**
