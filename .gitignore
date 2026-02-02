@@ -3,3 +3,4 @@
 port-daemon
 __pycache__/
 venv/
+.env
